@@ -1,12 +1,6 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -56,16 +50,17 @@ namespace ImgCompresser
 
         private void OnCompressClick(object sender, EventArgs e)
         {
-            Task.Run(
+            bt_chooseFolder.Enabled = bt_compress.Enabled = false;
+            Task.Run(  //主任务
                 () =>
                 {
-                    tb_detail.Invoke(append, "开始压缩".PadCenter(30, '*').EnterLine(2));
+                    tb_detail.Invoke(append, "开始压缩".PadCenter(78, '*').EnterLine(2));
 
                     int count = 0, total = 0;  //任务统计
                     List<FileInfo> imgs = new ImgCollector().CollectImg(new DirectoryInfo(tb_imgFloder.Text));  //图片收集
                     Queue<Task> tasks = new Queue<Task>();  //任务列表
                     Task[] taskWindow = new Task[int.Parse(tb_maxTask.Text)];  //任务窗口 - 同时运行的任务
-        
+
                     /*遍历筛选图片，注册多任务列表*/
                     foreach (var file in imgs)
                     {
@@ -116,9 +111,16 @@ namespace ImgCompresser
                         Thread.Sleep(500);
                     }
 
-                    tb_detail.Invoke(append, $"压缩完成".PadCenter(15, '*').EnterLine(2));
-                    MessageBox.Show($"已压缩{count}张图片");
+                    tb_detail.Invoke(append, $"压缩完成".PadCenter(78, '*').EnterLine(2));
+                    DialogResult result = MessageBox.Show($"已压缩{count}张图片");
+                    if (result == DialogResult.OK || result == DialogResult.Yes)
+                    {
+                        Action<Button> action = (button) => button.Enabled = true;
+                        bt_compress.Invoke(action, bt_compress);
+                        bt_chooseFolder.Invoke(action, bt_chooseFolder);
+                    }
                 });
         }
+
     }
 }
